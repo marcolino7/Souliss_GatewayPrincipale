@@ -118,7 +118,6 @@ void setup()
 {	
 	Serial.begin(115200);
 	Serial.println("Gateway INIT");
-	//Serial.begin(9600);
 
 	pinMode(A1,INPUT);
 	analogReference(EXTERNAL);
@@ -138,7 +137,7 @@ void setup()
 
 	SetAsBatteryNode(batteryNode_address, 6);
 
-    //Set_SimpleLight(NASCTL01);		//Tipico T11 per il controllo del NAS
+	//Tipico T14 per il controllo del NAS 1
 	Souliss_SetT14(memory_map, NASCTL01_On);		//Tipico T11 per il controllo del NAS
 	Souliss_SetT14(memory_map, NASCTL01_Off);		//Tipico T11 per il controllo del NAS
     
@@ -152,12 +151,13 @@ void setup()
 	Souliss_SetT14(memory_map, PC_RST_RELE);
 	Souliss_SetT11(memory_map, PC_PWR_RELE);
 
+	//Inizializzo il server HTML, usato solo per il servomotore
 	XMLSERVERInit(memory_map);
 
 	//------NAS
 	pinMode(NAS1_Switch, INPUT);      // Pulsante HW NAS01
-	pinMode(NAS1_Rele, OUTPUT);     // Rel� NAS01
-	pinMode(NAS1_PwrSw, OUTPUT);     // Rel� NAS01
+	pinMode(NAS1_Rele, OUTPUT);     // Rele NAS01
+	pinMode(NAS1_PwrSw, OUTPUT);     // Rele NAS01
 	
 	data_changed = 0;
 }
@@ -174,6 +174,7 @@ void loop()
 			Souliss_Logic_T14(memory_map, NASCTL01_Off, &data_changed);
 			Souliss_DigOutNAS1_Off(Souliss_T1n_OnCoil, memory_map,NASCTL01_Off);
 
+			//Logica per controllare il rele del reset e del power del PC
 			Souliss_DigOut(PIN_PC_RST, Souliss_T1n_Coil, memory_map, PC_RST_RELE);
 			Souliss_DigOut(PIN_PC_PWR, Souliss_T1n_Coil, memory_map, PC_PWR_RELE);
 		
