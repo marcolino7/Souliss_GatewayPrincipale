@@ -79,6 +79,7 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define powersocket3_address	0x6503			// Indirizzo del Power Socket 3
 #define powersocket4_address	0x6504			// Indirizzo del Power Socket 4
 #define batteryNode_address		0x6505			//Indirizzo del Nodo a batteria di Test
+#define ingressoEth_address		0x0082			//192.168.1.130 Indirizzo del nodo ingresso ethernet
 
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
@@ -136,6 +137,8 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, powersocket4_address,5);
 
 	SetAsBatteryNode(batteryNode_address, 6);
+
+	Souliss_SetRemoteAddress(memory_map, ingressoEth_address,7);
 
 	//Tipico T14 per il controllo del NAS 1
 	Souliss_SetT14(memory_map, NASCTL01_On);		//Tipico T11 per il controllo del NAS
