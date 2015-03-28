@@ -123,6 +123,8 @@ void setup()
 	pinMode(A1,INPUT);
 	analogReference(EXTERNAL);
 
+	//Initialize();
+
 	// Setup the network configuration
 	Souliss_SetIPAddress(ip_address, subnet_mask, ip_gateway);
 	SetAsGateway(eth_address);		//Set this node as gateway for SoulissApp	
@@ -136,9 +138,11 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, powersocket3_address,4);
 	Souliss_SetRemoteAddress(memory_map, powersocket4_address,5);
 
-	SetAsBatteryNode(batteryNode_address, 6);
+	//SetAsBatteryNode(batteryNode_address, 6);
 
-	Souliss_SetRemoteAddress(memory_map, ingressoEth_address,7);
+	//Souliss_SetRemoteAddress(memory_map, ingressoEth_address,6);
+
+	SetAddressingServer();
 
 	//Tipico T14 per il controllo del NAS 1
 	Souliss_SetT14(memory_map, NASCTL01_On);		//Tipico T11 per il controllo del NAS
