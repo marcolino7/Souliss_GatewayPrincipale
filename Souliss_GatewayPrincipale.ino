@@ -34,9 +34,9 @@ FRIARIELLO
 #define VNET_DEBUG  		1
 
 #define	MaCaco_DEBUG_INSKETCH
-#define MaCaco_DEBUG  		1
+#define MaCaco_DEBUG  		0
 
-#define USART_DEBUG  			1		//Disabilito il Debug
+#define USART_DEBUG  			0		//Disabilito il Debug
 
 #define USARTDRIVER_INSKETCH
 #define	USARTDRIVER				Serial1	//Dico al driver vNet di usare la seriale 3 del Mega la Serial1
@@ -58,6 +58,8 @@ FRIARIELLO
 #include "conf/usart.h"
 #include "conf/Gateway_wPersistence.h"		// The main node is the Gateway
 #include "conf/XMLinterface.h"
+#include "conf/DynamicAddressing.h"         // Use dynamic address
+
 
 // Include framework code and libraries
 #include <SPI.h>
