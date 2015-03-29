@@ -58,7 +58,7 @@ FRIARIELLO
 #include "conf/usart.h"
 #include "conf/Gateway_wPersistence.h"		// The main node is the Gateway
 #include "conf/XMLinterface.h"
-#include "conf/DynamicAddressing.h"         // Use dynamic address
+//#include "conf/DynamicAddressing.h"         // Use dynamic address
 
 
 // Include framework code and libraries
@@ -142,9 +142,9 @@ void setup()
 
 	//SetAsBatteryNode(batteryNode_address, 6);
 
-	//Souliss_SetRemoteAddress(memory_map, ingressoEth_address,6);
+	Souliss_SetRemoteAddress(memory_map, ingressoEth_address,6);
 
-	SetAddressingServer();
+	//SetAddressingServer();
 
 	//Tipico T14 per il controllo del NAS 1
 	Souliss_SetT14(memory_map, NASCTL01_On);		//Tipico T11 per il controllo del NAS
