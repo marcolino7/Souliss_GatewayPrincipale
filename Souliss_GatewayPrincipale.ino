@@ -34,7 +34,7 @@ FRIARIELLO
 #define VNET_DEBUG  		1
 
 #define	MaCaco_DEBUG_INSKETCH
-#define MaCaco_DEBUG  		0
+#define MaCaco_DEBUG  		1
 
 #define USART_DEBUG  			0		//Disabilito il Debug
 
@@ -64,6 +64,8 @@ FRIARIELLO
 // Include framework code and libraries
 #include <SPI.h>
 #include "Souliss.h"
+#include <EEPROM.h>
+#include "Souliss.h"
 #include <Voltmetro.h>
 
 // Define the network configuration according to your router settings
@@ -80,8 +82,9 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define powersocket2_address	0x6502			// Indirizzo del Power Socket 2
 #define powersocket3_address	0x6503			// Indirizzo del Power Socket 3
 #define powersocket4_address	0x6504			// Indirizzo del Power Socket 4
-#define batteryNode_address		0x6505			//Indirizzo del Nodo a batteria di Test
+//#define batteryNode_address		0x6505			//Indirizzo del Nodo a batteria di Test
 #define ingressoEth_address		0x0082			//192.168.1.130 Indirizzo del nodo ingresso ethernet
+#define testESP					0x0083			//192.168.1.131
 
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
@@ -139,10 +142,11 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, powersocket2_address,3);
 	Souliss_SetRemoteAddress(memory_map, powersocket3_address,4);
 	Souliss_SetRemoteAddress(memory_map, powersocket4_address,5);
-
-	//SetAsBatteryNode(batteryNode_address, 6);
-
 	Souliss_SetRemoteAddress(memory_map, ingressoEth_address,6);
+	Souliss_SetRemoteAddress(memory_map, testESP,7);
+	//SetAsBatteryNode(batteryNode_address, 7);
+
+
 
 	//SetAddressingServer();
 
