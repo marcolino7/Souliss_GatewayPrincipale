@@ -82,25 +82,39 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define powersocket2_address	0x6502			// Indirizzo del Power Socket 2
 #define powersocket3_address	0x6503			// Indirizzo del Power Socket 3
 #define powersocket4_address	0x6504			// Indirizzo del Power Socket 4
-//#define batteryNode_address		0x6505			//Indirizzo del Nodo a batteria di Test
-#define ingressoEth_address		0x0082			//192.168.1.130 Indirizzo del nodo ingresso ethernet
-#define testESP					0x0083			//192.168.1.131
 
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
 
 
+//Pin Assignment
+#define PIN_RELE_1		22
+#define PIN_RELE_2		23
+#define PIN_DIGIN_1		24
+#define PIN_DIGIN_2		25
+#define PIN_DIGIN_3		26
+#define PIN_ADC_1		8	//ANALOG 8
+#define PIN_ADC_2		9	//ANALOG 9
+
 //NAS
-#define NAS1_Switch		22
-#define NAS1_Rele		24
-#define NAS1_PwrSw		28
-#define PIN_PC_RST		2
-#define PIN_PC_PWR		3
+#define NAS1_Switch		40
+#define NAS1_Rele		41
+#define NAS1_PwrSw		42
+#define PIN_PC_RST		43
+#define PIN_PC_PWR		44
 
 //Souliss SLOT
+#define T_RELE_1		0
+#define T_RELE_2		1
+#define T_DIGIN_1		2
+#define T_DIGIN_2		3
+#define T_DIGIN_3		4
+#define T_ADC_1			5
+#define T_ADC_2			7
+
+
 #define NASCTL01_On		0	//T11 per comandare l'accensione del NAS
 #define NASCTL01_Off	1	//T11 per comandare l'accensione del NAS
-#define BATTERY1		2	//T55 Per leggere i Volt della Batteria
 #define PC_RST_SECURE	4	//T11 per attivare il T14 che resetta il PC
 #define PC_RST_RELE		5	//T14 che azione il relè che resetta il PC
 #define PC_PWR_RELE		6	//T14 che aziona il Pulsante di accensione del PC
@@ -113,8 +127,11 @@ long nas1_count = 0;
 
 //Variabili che Gestiscono il Voltmetro
 // Voltmetro(pin,R1,R2.VRef)
-Voltmetro voltmt1(1,10000.0,1000.0,3.35); //4.80
+Voltmetro voltmt1(8,47000.0,8200.0,1.10); //4.80
 float v_voltmt1;
+Voltmetro voltmt2(9,22000.0,10000.0,1.10); //4.80
+float v_voltmt2;
+
 
 #define DEADBAND      0.01 //Se la variazione è superio del 1% aggiorno
 #define NODEADBAND	  0 //Se la variazione è superio del 0,1% aggiorno
@@ -126,7 +143,7 @@ void setup()
 	Serial.println("Gateway INIT");
 
 	pinMode(A1,INPUT);
-	analogReference(EXTERNAL);
+	analogReference(INTERNAL1V1);
 
 	//Initialize();
 
@@ -142,21 +159,30 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, powersocket2_address,3);
 	Souliss_SetRemoteAddress(memory_map, powersocket3_address,4);
 	Souliss_SetRemoteAddress(memory_map, powersocket4_address,5);
-	Souliss_SetRemoteAddress(memory_map, ingressoEth_address,6);
-	Souliss_SetRemoteAddress(memory_map, testESP,7);
-	//SetAsBatteryNode(batteryNode_address, 7);
+
+	//Pin Mode
+	pinMode(PIN_RELE_1, OUTPUT);
+	pinMode(PIN_RELE_2, OUTPUT);
+	pinMode(PIN_DIGIN_1, INPUT);
+	pinMode(PIN_DIGIN_2, INPUT);
+	pinMode(PIN_DIGIN_3, INPUT);
+	pinMode(PIN_ADC_1, INPUT);
+	pinMode(PIN_ADC_2, INPUT);
+	
+	//Tipici
+	Souliss_SetT11(memory_map, T_RELE_1);
+	Souliss_SetT11(memory_map, T_RELE_2);
+	Souliss_SetT13(memory_map, T_DIGIN_1);
+	Souliss_SetT13(memory_map, T_DIGIN_2);
+	Souliss_SetT13(memory_map, T_DIGIN_3);
+	Souliss_SetT55(memory_map, T_ADC_1);
+	Souliss_SetT55(memory_map, T_ADC_2);
 
 
-
-	//SetAddressingServer();
-
+	/*
 	//Tipico T14 per il controllo del NAS 1
 	Souliss_SetT14(memory_map, NASCTL01_On);		//Tipico T11 per il controllo del NAS
 	Souliss_SetT14(memory_map, NASCTL01_Off);		//Tipico T11 per il controllo del NAS
-    
-
-	// Tipico T55 per la lettura del Voltmetro
-	Souliss_SetT55(memory_map, BATTERY1);
 
 	// Tipici T11 e T14 per la gestione del reset del PC
 	pinMode(PIN_PC_RST, OUTPUT);
@@ -171,7 +197,8 @@ void setup()
 	pinMode(NAS1_Switch, INPUT);      // Pulsante HW NAS01
 	pinMode(NAS1_Rele, OUTPUT);     // Rele NAS01
 	pinMode(NAS1_PwrSw, OUTPUT);     // Rele NAS01
-	
+	*/
+
 	data_changed = 0;
 }
 
@@ -180,6 +207,12 @@ void loop()
 	EXECUTEFAST() {						
 		UPDATEFAST();	
 		FAST_30ms() {
+
+			//Uscite a Relè
+			Souliss_DigOut(PIN_RELE_1, Souliss_T1n_Coil, memory_map, T_RELE_1);
+			Souliss_DigOut(PIN_RELE_2, Souliss_T1n_Coil, memory_map, T_RELE_2);
+
+			/*
 			// Logica di controllo del NAS
 			Souliss_Logic_T14(memory_map, NASCTL01_On, &data_changed);
 			Souliss_DigOutNAS1_On(Souliss_T1n_OnCoil, memory_map,NASCTL01_On);
@@ -190,7 +223,7 @@ void loop()
 			//Logica per controllare il rele del reset e del power del PC
 			Souliss_DigOut(PIN_PC_RST, Souliss_T1n_Coil, memory_map, PC_RST_RELE);
 			Souliss_DigOut(PIN_PC_PWR, Souliss_T1n_Coil, memory_map, PC_PWR_RELE);
-		
+			*/
 		}
 		FAST_50ms() {
 			// Retreive data from the MaCaco communication channel
@@ -202,36 +235,57 @@ void loop()
 		}
 
 		FAST_90ms() {
-			// Logica per controllare il voltmetro della prima batteria
-			Souliss_Logic_T55(memory_map, BATTERY1, DEADBAND, &data_changed);
+			// Logica per controllare i 2 VOLTMETRI
+			Souliss_Logic_T55(memory_map, T_ADC_1, DEADBAND, &data_changed);
+			Souliss_Logic_T55(memory_map, T_ADC_2, DEADBAND, &data_changed);
 
+			// Esegui Logic per la linea FAN
+			Souliss_Logic_T11(memory_map, T_RELE_1, &data_changed);
+			Souliss_Logic_T11(memory_map, T_RELE_2, &data_changed);
+
+
+			
 			//Logica T11 per l'attivazione del Reset del PC
-			Souliss_Logic_T11(memory_map, PC_RST_SECURE, &data_changed);
+			//Souliss_Logic_T11(memory_map, PC_RST_SECURE, &data_changed);
 
 			//Logica T11 per gestire il pulsante power del PC
 			//Che non viene attivato se la sicura non è armata
-			Souliss_Logic_T11(memory_map, PC_PWR_RELE, &data_changed);
-			if (!mOutput(PC_RST_SECURE)) mOutput(PC_PWR_RELE) = 0;
+			//Souliss_Logic_T11(memory_map, PC_PWR_RELE, &data_changed);
+			//if (!mOutput(PC_RST_SECURE)) mOutput(PC_PWR_RELE) = 0;
 
 		}
 
 		FAST_110ms() {
             // Get logic typicals once and at every refresh
             Souliss_GetTypicals(memory_map);
+
+			//Logiche per gestire gli ingressi Digitali
+			Souliss_LowDigIn2State(PIN_DIGIN_1,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_1);
+			Souliss_LowDigIn2State(PIN_DIGIN_2,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_2);
+			Souliss_LowDigIn2State(PIN_DIGIN_3,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_3);
+			
+
+			
 		}
 
 		FAST_510ms() {
 			// Open a communication channel with remote nodes
             Souliss_CommunicationChannels(memory_map);
 
-			NAS01_Timing();
+			// Esegui la Logica per gli ingressi Digitali
+			Souliss_Logic_T13(memory_map, T_DIGIN_1, &data_changed);
+			Souliss_Logic_T13(memory_map, T_DIGIN_2, &data_changed);
+			Souliss_Logic_T13(memory_map, T_DIGIN_3, &data_changed);
+
+
+			//NAS01_Timing();
 		}
 
 		FAST_2110ms() {
 			
 			//Lascio il pulsante di reset premuto per 2 secondi se la sicura è armata
-			Souliss_Logic_T14(memory_map, PC_RST_RELE, &data_changed);
-			if (!mOutput(PC_RST_SECURE)) mOutput(PC_RST_RELE) = 0;
+			//Souliss_Logic_T14(memory_map, PC_RST_RELE, &data_changed);
+			//if (!mOutput(PC_RST_SECURE)) mOutput(PC_RST_RELE) = 0;
 		}
 
 	}
@@ -241,9 +295,11 @@ void loop()
 			
 			//Leggo il voltmetro e aggiorno lo slot
 			v_voltmt1 = voltmt1.getVoltage();
-			//Serial.println(v_voltmt1);
-			Souliss_ImportAnalog(memory_map, BATTERY1, &v_voltmt1);
+			Souliss_ImportAnalog(memory_map, T_ADC_1, &v_voltmt1);
 
+			//Leggo il voltmetro e aggiorno lo slot
+			v_voltmt2 = voltmt2.getVoltage();
+			Souliss_ImportAnalog(memory_map, T_ADC_2, &v_voltmt2);
 
 		}
 		SLOW_510s() {
