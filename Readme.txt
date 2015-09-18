@@ -7,11 +7,11 @@
 51  - nrf24 MOSI
 52  - nrf24 SCK
 
-22 - Relè 1
-23 - Relè 2
-24 - Dig IN 1 - 12 Volt
-25 - Dig IN 2 -  5 Volt
-26 - Dig IN 3 - 12 Volt
+22 - Relè OnBoard 1
+23 - Relè OnBoard 2
+24 - Dig IN 1 - 12 Volt - Stato Antifurto
+25 - Dig IN 2 -  5 Volt - Presenza 220Volt
+26 - Dig IN 3 - 12 Volt - Stato Sirena
 
 A8 - Voltmento 1 30 Volt Max
 A9 - Voltmento 2 15 Volt Max

@@ -93,8 +93,6 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define PIN_DIGIN_1		24
 #define PIN_DIGIN_2		25
 #define PIN_DIGIN_3		26
-#define PIN_ADC_1		8	//ANALOG 8
-#define PIN_ADC_2		9	//ANALOG 9
 
 //NAS
 #define NAS1_Switch		40
@@ -166,8 +164,6 @@ void setup()
 	pinMode(PIN_DIGIN_1, INPUT);
 	pinMode(PIN_DIGIN_2, INPUT);
 	pinMode(PIN_DIGIN_3, INPUT);
-	pinMode(PIN_ADC_1, INPUT);
-	pinMode(PIN_ADC_2, INPUT);
 	
 	//Tipici
 	Souliss_SetT11(memory_map, T_RELE_1);
@@ -227,7 +223,7 @@ void loop()
 		}
 		FAST_50ms() {
 			// Retreive data from the MaCaco communication channel
-            Souliss_CommunicationData(memory_map, &data_changed);
+            //Souliss_CommunicationData(memory_map, &data_changed);
 		}
 
 		FAST_70ms() {
@@ -257,7 +253,7 @@ void loop()
 
 		FAST_110ms() {
             // Get logic typicals once and at every refresh
-            Souliss_GetTypicals(memory_map);
+            //Souliss_GetTypicals(memory_map);
 
 			//Logiche per gestire gli ingressi Digitali
 			Souliss_LowDigIn2State(PIN_DIGIN_1,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_1);
@@ -270,7 +266,7 @@ void loop()
 
 		FAST_510ms() {
 			// Open a communication channel with remote nodes
-            Souliss_CommunicationChannels(memory_map);
+            //Souliss_CommunicationChannels(memory_map);
 
 			// Esegui la Logica per gli ingressi Digitali
 			Souliss_Logic_T13(memory_map, T_DIGIN_1, &data_changed);
@@ -287,7 +283,7 @@ void loop()
 			//Souliss_Logic_T14(memory_map, PC_RST_RELE, &data_changed);
 			//if (!mOutput(PC_RST_SECURE)) mOutput(PC_RST_RELE) = 0;
 		}
-
+		FAST_GatewayComms();
 	}
 	EXECUTESLOW() {
 		UPDATESLOW();
@@ -305,7 +301,6 @@ void loop()
 		SLOW_510s() {
 		} 
 	}		
-	//FAST_GatewayComms();
 } 
 
 void My_Set_Aux(U8 value, U8 *memory_map, U8 slot) {
