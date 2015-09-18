@@ -28,5 +28,13 @@ powersocket3_address	0x6503			// Indirizzo del Power Socket 3
 powersocket4_address	0x6504			// Indirizzo del Power Socket 4
 
 
-- Tipici Souliss
+- Tipici / Slot
+
+T11 - T_RELE_1			0
+T11 - T_RELE_2			1
+T13 - T_DIGIN_1			2
+T13 - T_DIGIN_2			3
+T13 - T_DIGIN_3			4
+T55 - T_ADC_1			5
+T55 - T_ADC_2			7
 
