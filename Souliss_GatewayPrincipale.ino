@@ -94,6 +94,10 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define PIN_DIGIN_2		25
 #define PIN_DIGIN_3		26
 
+#define PIN_RJ1_1		30
+#define PIN_RJ1_2		31
+#define PIN_RJ1_3		33
+
 //NAS
 #define NAS1_Switch		40
 #define NAS1_Rele		41
@@ -107,8 +111,12 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define T_DIGIN_1		2
 #define T_DIGIN_2		3
 #define T_DIGIN_3		4
-#define T_ADC_1			5
-#define T_ADC_2			7
+#define T_ADC_1			5	//6  -- 2Slot
+#define T_ADC_2			7	//8  -- 2Slot
+#define PC_ARM_BTN	9	//T11 Virtuale che serve per armare il pulsante di reset
+#define T_RJ1_1			10
+#define T_RJ1_2			11
+#define T_RJ1_3			12
 
 
 #define NASCTL01_On		0	//T11 per comandare l'accensione del NAS
@@ -137,6 +145,10 @@ float v_voltmt2;
 
 void setup()
 {	
+	//Imposta gli stati delle porte con i relè a logica invertita
+	digitalWrite(PIN_RJ1_1,HIGH);
+	digitalWrite(PIN_RJ1_2,HIGH);
+
 	Serial.begin(115200);
 	Serial.println("Gateway INIT");
 
@@ -164,15 +176,22 @@ void setup()
 	pinMode(PIN_DIGIN_1, INPUT);
 	pinMode(PIN_DIGIN_2, INPUT);
 	pinMode(PIN_DIGIN_3, INPUT);
-	
+	pinMode(PIN_RJ1_1,OUTPUT);
+	pinMode(PIN_RJ1_2,OUTPUT);
+	pinMode(PIN_RJ1_3,INPUT);
+
 	//Tipici
-	Souliss_SetT11(memory_map, T_RELE_1);
-	Souliss_SetT11(memory_map, T_RELE_2);
-	Souliss_SetT13(memory_map, T_DIGIN_1);
-	Souliss_SetT13(memory_map, T_DIGIN_2);
-	Souliss_SetT13(memory_map, T_DIGIN_3);
-	Souliss_SetT55(memory_map, T_ADC_1);
-	Souliss_SetT55(memory_map, T_ADC_2);
+	Souliss_SetT11(memory_map, T_RELE_1);	//Relè onboard 1
+	Souliss_SetT11(memory_map, T_RELE_2);	//Rele onboard 2
+	Souliss_SetT13(memory_map, T_DIGIN_1);	//Antifurto
+	Souliss_SetT13(memory_map, T_DIGIN_2);	//220V
+	Souliss_SetT13(memory_map, T_DIGIN_3);	//Sirena
+	Souliss_SetT55(memory_map, T_ADC_1);	//UPS 30Volt
+	Souliss_SetT55(memory_map, T_ADC_2);	//UPS 15 Volt
+	Souliss_SetT11(memory_map, PC_ARM_BTN);	
+	Souliss_SetT14(memory_map, T_RJ1_1);	//PC rele 1 - Reset
+	Souliss_SetT11(memory_map, T_RJ1_2);	//PC rele 2	- Power
+	Souliss_SetT13(memory_map, T_RJ1_3);	//PC Acceso
 
 
 	/*
@@ -208,6 +227,9 @@ void loop()
 			Souliss_DigOut(PIN_RELE_1, Souliss_T1n_Coil, memory_map, T_RELE_1);
 			Souliss_DigOut(PIN_RELE_2, Souliss_T1n_Coil, memory_map, T_RELE_2);
 
+			Souliss_LowDigOut(PIN_RJ1_1, Souliss_T1n_Coil, memory_map, T_RJ1_1);	//La scheda è a logica invertita
+			Souliss_LowDigOut(PIN_RJ1_2, Souliss_T1n_Coil, memory_map, T_RJ1_2);	//La scheda è a logica invertita
+
 			/*
 			// Logica di controllo del NAS
 			Souliss_Logic_T14(memory_map, NASCTL01_On, &data_changed);
@@ -217,8 +239,8 @@ void loop()
 			Souliss_DigOutNAS1_Off(Souliss_T1n_OnCoil, memory_map,NASCTL01_Off);
 
 			//Logica per controllare il rele del reset e del power del PC
-			Souliss_DigOut(PIN_PC_RST, Souliss_T1n_Coil, memory_map, PC_RST_RELE);
-			Souliss_DigOut(PIN_PC_PWR, Souliss_T1n_Coil, memory_map, PC_PWR_RELE);
+			OK Souliss_DigOut(PIN_PC_RST, Souliss_T1n_Coil, memory_map, PC_RST_RELE);
+			OK Souliss_DigOut(PIN_PC_PWR, Souliss_T1n_Coil, memory_map, PC_PWR_RELE);
 			*/
 		}
 		FAST_50ms() {
@@ -235,20 +257,22 @@ void loop()
 			Souliss_Logic_T55(memory_map, T_ADC_1, DEADBAND, &data_changed);
 			Souliss_Logic_T55(memory_map, T_ADC_2, DEADBAND, &data_changed);
 
-			// Esegui Logic per la linea FAN
+			// Esegui Logic per controllare i T11
 			Souliss_Logic_T11(memory_map, T_RELE_1, &data_changed);
 			Souliss_Logic_T11(memory_map, T_RELE_2, &data_changed);
 
+			Souliss_Logic_T11(memory_map, T_RJ1_1, &data_changed);
+			Souliss_Logic_T11(memory_map, T_RJ1_2, &data_changed);
 
 			
 			//Logica T11 per l'attivazione del Reset del PC
-			//Souliss_Logic_T11(memory_map, PC_RST_SECURE, &data_changed);
+			Souliss_Logic_T11(memory_map, PC_ARM_BTN, &data_changed);
 
 			//Logica T11 per gestire il pulsante power del PC
 			//Che non viene attivato se la sicura non è armata
-			//Souliss_Logic_T11(memory_map, PC_PWR_RELE, &data_changed);
-			//if (!mOutput(PC_RST_SECURE)) mOutput(PC_PWR_RELE) = 0;
-
+			//Souliss_Logic_T11(memory_map, T_RJ1_2, &data_changed);
+			if (!mOutput(PC_ARM_BTN)) mOutput(T_RJ1_2) = 0;
+			if (!mOutput(PC_ARM_BTN)) mOutput(T_RJ1_1) = 0;
 		}
 
 		FAST_110ms() {
@@ -260,7 +284,7 @@ void loop()
 			Souliss_LowDigIn2State(PIN_DIGIN_2,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_2);
 			Souliss_LowDigIn2State(PIN_DIGIN_3,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_3);
 			
-
+			Souliss_LowDigIn2State(PIN_RJ1_3,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_RJ1_3);
 			
 		}
 
@@ -273,6 +297,7 @@ void loop()
 			Souliss_Logic_T13(memory_map, T_DIGIN_2, &data_changed);
 			Souliss_Logic_T13(memory_map, T_DIGIN_3, &data_changed);
 
+			Souliss_Logic_T13(memory_map, T_RJ1_3, &data_changed);
 
 			//NAS01_Timing();
 		}
@@ -280,8 +305,11 @@ void loop()
 		FAST_2110ms() {
 			
 			//Lascio il pulsante di reset premuto per 2 secondi se la sicura è armata
-			//Souliss_Logic_T14(memory_map, PC_RST_RELE, &data_changed);
-			//if (!mOutput(PC_RST_SECURE)) mOutput(PC_RST_RELE) = 0;
+			Souliss_Logic_T14(memory_map, T_RJ1_1, &data_changed);
+			if (!mOutput(PC_ARM_BTN)) mOutput(T_RJ1_1) = 0;
+
+			//if (!Souliss_Output(memory_map, SECURE)) Souliss_Output(memory_map, RELE) = 0;
+
 		}
 		FAST_GatewayComms();
 	}
