@@ -31,10 +31,10 @@ FRIARIELLO
 #define SLEEPING_H						//Disabling Sleeping Library
 
 #define	VNET_DEBUG_INSKETCH
-#define VNET_DEBUG  		1
+#define VNET_DEBUG  		0
 
 #define	MaCaco_DEBUG_INSKETCH
-#define MaCaco_DEBUG  		1
+#define MaCaco_DEBUG  		0
 
 #define USART_DEBUG  			0		//Disabilito il Debug
 
@@ -58,8 +58,6 @@ FRIARIELLO
 #include "conf/usart.h"
 #include "conf/Gateway_wPersistence.h"		// The main node is the Gateway
 #include "conf/XMLinterface.h"
-//#include "conf/DynamicAddressing.h"         // Use dynamic address
-
 
 // Include framework code and libraries
 #include <SPI.h>
@@ -67,6 +65,9 @@ FRIARIELLO
 #include <EEPROM.h>
 #include "Souliss.h"
 #include <Voltmetro.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
 
 // Define the network configuration according to your router settings
 uint8_t ip_address[4]  = {192, 168, 1, 129};
@@ -86,24 +87,24 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
 
-
 //Pin Assignment
 #define PIN_RELE_1		22
 #define PIN_RELE_2		23
 #define PIN_DIGIN_1		24
 #define PIN_DIGIN_2		25
 #define PIN_DIGIN_3		26
-
 #define PIN_RJ1_1		30
 #define PIN_RJ1_2		31
-#define PIN_RJ1_3		33
+#define PIN_RJ1_3		32
+#define PIN_TEMP_1		33
+#define PIN_VOLT_1		A8
+#define PIN_VOLT_2		A9
 
 //NAS
 #define NAS1_Switch		40
 #define NAS1_Rele		41
 #define NAS1_PwrSw		42
-#define PIN_PC_RST		43
-#define PIN_PC_PWR		44
+
 
 //Souliss SLOT
 #define T_RELE_1		0
@@ -113,10 +114,11 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define T_DIGIN_3		4
 #define T_ADC_1			5	//6  -- 2Slot
 #define T_ADC_2			7	//8  -- 2Slot
-#define PC_ARM_BTN	9	//T11 Virtuale che serve per armare il pulsante di reset
+#define PC_ARM_BTN	9	//T11 Virtuale che serve per armare il pulsante di reset e di Power
 #define T_RJ1_1			10
 #define T_RJ1_2			11
 #define T_RJ1_3			12
+#define T_TEMP_1		13	//14 -- 2Slot
 
 
 #define NASCTL01_On		0	//T11 per comandare l'accensione del NAS
@@ -133,10 +135,17 @@ long nas1_count = 0;
 
 //Variabili che Gestiscono il Voltmetro
 // Voltmetro(pin,R1,R2.VRef)
-Voltmetro voltmt1(8,47000.0,8200.0,1.10); //4.80
+Voltmetro voltmt1(PIN_VOLT_1,47000.0,8200.0,5.36); //4.80
 float v_voltmt1;
-Voltmetro voltmt2(9,22000.0,10000.0,1.10); //4.80
+Voltmetro voltmt2(PIN_VOLT_2,22000.0,10000.0,5.36); //4.80
 float v_voltmt2;
+
+//Sonda Temperatura
+//#define TEMPERATURE_PRECISION	9	
+float f_temp_1;
+OneWire oneWire(PIN_TEMP_1);
+DallasTemperature sensors(&oneWire);
+//DeviceAddress insideThermometer;
 
 
 #define DEADBAND      0.01 //Se la variazione è superio del 1% aggiorno
@@ -152,8 +161,7 @@ void setup()
 	Serial.begin(115200);
 	Serial.println("Gateway INIT");
 
-	pinMode(A1,INPUT);
-	analogReference(INTERNAL1V1);
+	analogReference(EXTERNAL);
 
 	//Initialize();
 
@@ -171,6 +179,8 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, powersocket4_address,5);
 
 	//Pin Mode
+	pinMode(PIN_VOLT_1,INPUT);
+	pinMode(PIN_VOLT_2,INPUT);
 	pinMode(PIN_RELE_1, OUTPUT);
 	pinMode(PIN_RELE_2, OUTPUT);
 	pinMode(PIN_DIGIN_1, INPUT);
@@ -179,6 +189,8 @@ void setup()
 	pinMode(PIN_RJ1_1,OUTPUT);
 	pinMode(PIN_RJ1_2,OUTPUT);
 	pinMode(PIN_RJ1_3,INPUT);
+	pinMode(PIN_TEMP_1,INPUT);
+
 
 	//Tipici
 	Souliss_SetT11(memory_map, T_RELE_1);	//Relè onboard 1
@@ -192,6 +204,8 @@ void setup()
 	Souliss_SetT14(memory_map, T_RJ1_1);	//PC rele 1 - Reset
 	Souliss_SetT11(memory_map, T_RJ1_2);	//PC rele 2	- Power
 	Souliss_SetT13(memory_map, T_RJ1_3);	//PC Acceso
+	Souliss_SetT52(memory_map, T_TEMP_1);	//Sonda Temperatura Rack
+	
 
 
 	/*
@@ -238,14 +252,10 @@ void loop()
 			Souliss_Logic_T14(memory_map, NASCTL01_Off, &data_changed);
 			Souliss_DigOutNAS1_Off(Souliss_T1n_OnCoil, memory_map,NASCTL01_Off);
 
-			//Logica per controllare il rele del reset e del power del PC
-			OK Souliss_DigOut(PIN_PC_RST, Souliss_T1n_Coil, memory_map, PC_RST_RELE);
-			OK Souliss_DigOut(PIN_PC_PWR, Souliss_T1n_Coil, memory_map, PC_PWR_RELE);
 			*/
 		}
 		FAST_50ms() {
-			// Retreive data from the MaCaco communication channel
-            //Souliss_CommunicationData(memory_map, &data_changed);
+
 		}
 
 		FAST_70ms() {
@@ -256,6 +266,8 @@ void loop()
 			// Logica per controllare i 2 VOLTMETRI
 			Souliss_Logic_T55(memory_map, T_ADC_1, DEADBAND, &data_changed);
 			Souliss_Logic_T55(memory_map, T_ADC_2, DEADBAND, &data_changed);
+			//Logica per controllare le sonde di temperatura
+			Souliss_Logic_T52(memory_map, T_TEMP_1, DEADBAND, &data_changed);
 
 			// Esegui Logic per controllare i T11
 			Souliss_Logic_T11(memory_map, T_RELE_1, &data_changed);
@@ -263,40 +275,29 @@ void loop()
 
 			Souliss_Logic_T11(memory_map, T_RJ1_1, &data_changed);
 			Souliss_Logic_T11(memory_map, T_RJ1_2, &data_changed);
-
-			
-			//Logica T11 per l'attivazione del Reset del PC
+						
+			//Logica T11 per l'attivazione del Reset e Power del PC
 			Souliss_Logic_T11(memory_map, PC_ARM_BTN, &data_changed);
 
-			//Logica T11 per gestire il pulsante power del PC
-			//Che non viene attivato se la sicura non è armata
-			//Souliss_Logic_T11(memory_map, T_RJ1_2, &data_changed);
+			//Inibizione del pulsante di Reset e di Power se il PC_ARM_BTN è in OFF
 			if (!mOutput(PC_ARM_BTN)) mOutput(T_RJ1_2) = 0;
 			if (!mOutput(PC_ARM_BTN)) mOutput(T_RJ1_1) = 0;
 		}
 
 		FAST_110ms() {
-            // Get logic typicals once and at every refresh
-            //Souliss_GetTypicals(memory_map);
-
 			//Logiche per gestire gli ingressi Digitali
 			Souliss_LowDigIn2State(PIN_DIGIN_1,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_1);
 			Souliss_LowDigIn2State(PIN_DIGIN_2,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_2);
 			Souliss_LowDigIn2State(PIN_DIGIN_3,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_3);
-			
 			Souliss_LowDigIn2State(PIN_RJ1_3,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_RJ1_3);
 			
 		}
 
 		FAST_510ms() {
-			// Open a communication channel with remote nodes
-            //Souliss_CommunicationChannels(memory_map);
-
 			// Esegui la Logica per gli ingressi Digitali
 			Souliss_Logic_T13(memory_map, T_DIGIN_1, &data_changed);
 			Souliss_Logic_T13(memory_map, T_DIGIN_2, &data_changed);
 			Souliss_Logic_T13(memory_map, T_DIGIN_3, &data_changed);
-
 			Souliss_Logic_T13(memory_map, T_RJ1_3, &data_changed);
 
 			//NAS01_Timing();
@@ -307,8 +308,6 @@ void loop()
 			//Lascio il pulsante di reset premuto per 2 secondi se la sicura è armata
 			Souliss_Logic_T14(memory_map, T_RJ1_1, &data_changed);
 			if (!mOutput(PC_ARM_BTN)) mOutput(T_RJ1_1) = 0;
-
-			//if (!Souliss_Output(memory_map, SECURE)) Souliss_Output(memory_map, RELE) = 0;
 
 		}
 		FAST_GatewayComms();
@@ -324,6 +323,12 @@ void loop()
 			//Leggo il voltmetro e aggiorno lo slot
 			v_voltmt2 = voltmt2.getVoltage();
 			Souliss_ImportAnalog(memory_map, T_ADC_2, &v_voltmt2);
+
+			//Leggo le sonde di temperatura
+			sensors.requestTemperatures();
+			float f_temp_1 = sensors.getTempCByIndex(0);
+			Souliss_ImportAnalog(memory_map, T_TEMP_1, &f_temp_1);
+
 
 		}
 		SLOW_510s() {
