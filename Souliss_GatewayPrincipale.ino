@@ -141,15 +141,16 @@ Voltmetro voltmt2(PIN_VOLT_2,22000.0,10000.0,5.36); //4.80
 float v_voltmt2;
 
 //Sonda Temperatura
-//#define TEMPERATURE_PRECISION	9	
+#define TEMPERATURE_PRECISION	9	
 float f_temp_1;
 OneWire oneWire(PIN_TEMP_1);
 DallasTemperature sensors(&oneWire);
-//DeviceAddress insideThermometer;
+DeviceAddress insideThermometer1;
 
 
-#define DEADBAND      0.01 //Se la variazione è superio del 1% aggiorno
-#define NODEADBAND	  0 //Se la variazione è superio del 0,1% aggiorno
+#define DEADBAND      0.01	//Se la variazione è superiore del 0.01% aggiorno
+#define DEADBAND01	  0.1	//Se la variazione è superiore del 0.1% aggiorno		
+#define NODEADBAND	  0		//Se la variazione è superiore del 0 aggiorno
 
 
 void setup()
@@ -206,7 +207,9 @@ void setup()
 	Souliss_SetT13(memory_map, T_RJ1_3);	//PC Acceso
 	Souliss_SetT52(memory_map, T_TEMP_1);	//Sonda Temperatura Rack
 	
-
+	//Imposto la sonda DS18B20
+	sensors.setResolution(insideThermometer1, TEMPERATURE_PRECISION);
+	sensors.getAddress(insideThermometer1, 0);
 
 	/*
 	//Tipico T14 per il controllo del NAS 1
@@ -264,10 +267,10 @@ void loop()
 
 		FAST_90ms() {
 			// Logica per controllare i 2 VOLTMETRI
-			Souliss_Logic_T51(memory_map, T_ADC_1, DEADBAND, &data_changed);
-			Souliss_Logic_T51(memory_map, T_ADC_2, DEADBAND, &data_changed);
+			Souliss_Logic_T51(memory_map, T_ADC_1, DEADBAND01, &data_changed);
+			Souliss_Logic_T51(memory_map, T_ADC_2, DEADBAND01, &data_changed);
 			//Logica per controllare le sonde di temperatura
-			Souliss_Logic_T52(memory_map, T_TEMP_1, DEADBAND, &data_changed);
+			Souliss_Logic_T52(memory_map, T_TEMP_1, NODEADBAND, &data_changed);
 
 			// Esegui Logic per controllare i T11
 			Souliss_Logic_T11(memory_map, T_RELE_1, &data_changed);
@@ -326,7 +329,9 @@ void loop()
 
 			//Leggo le sonde di temperatura
 			sensors.requestTemperatures();
-			float f_temp_1 = sensors.getTempCByIndex(0);
+			float f_temp_1 = sensors.getTempC(insideThermometer1);
+			Serial.print("Temp:");
+			Serial.println(f_temp_1);
 			Souliss_ImportAnalog(memory_map, T_TEMP_1, &f_temp_1);
 
 
