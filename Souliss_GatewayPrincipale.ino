@@ -198,8 +198,8 @@ void setup()
 	Souliss_SetT13(memory_map, T_DIGIN_1);	//Antifurto
 	Souliss_SetT13(memory_map, T_DIGIN_2);	//220V
 	Souliss_SetT13(memory_map, T_DIGIN_3);	//Sirena
-	Souliss_SetT55(memory_map, T_ADC_1);	//UPS 30Volt
-	Souliss_SetT55(memory_map, T_ADC_2);	//UPS 15 Volt
+	Souliss_SetT51(memory_map, T_ADC_1);	//UPS 30Volt
+	Souliss_SetT51(memory_map, T_ADC_2);	//UPS 15 Volt
 	Souliss_SetT11(memory_map, PC_ARM_BTN);	
 	Souliss_SetT14(memory_map, T_RJ1_1);	//PC rele 1 - Reset
 	Souliss_SetT11(memory_map, T_RJ1_2);	//PC rele 2	- Power
@@ -264,8 +264,8 @@ void loop()
 
 		FAST_90ms() {
 			// Logica per controllare i 2 VOLTMETRI
-			Souliss_Logic_T55(memory_map, T_ADC_1, DEADBAND, &data_changed);
-			Souliss_Logic_T55(memory_map, T_ADC_2, DEADBAND, &data_changed);
+			Souliss_Logic_T51(memory_map, T_ADC_1, DEADBAND, &data_changed);
+			Souliss_Logic_T51(memory_map, T_ADC_2, DEADBAND, &data_changed);
 			//Logica per controllare le sonde di temperatura
 			Souliss_Logic_T52(memory_map, T_TEMP_1, DEADBAND, &data_changed);
 
