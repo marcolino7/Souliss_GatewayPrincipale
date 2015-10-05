@@ -93,8 +93,8 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define PIN_DIGIN_1		24
 #define PIN_DIGIN_2		25
 #define PIN_DIGIN_3		26
-#define PIN_RJ1_1		30
-#define PIN_RJ1_2		31
+#define PIN_RJ1_1		31
+#define PIN_RJ1_2		30
 #define PIN_RJ1_3		32
 #define PIN_TEMP_1		33
 #define PIN_VOLT_1		A8
@@ -211,6 +211,9 @@ void setup()
 	sensors.setResolution(insideThermometer1, TEMPERATURE_PRECISION);
 	sensors.getAddress(insideThermometer1, 0);
 
+	//Inizializzo il server HTML, usato solo per il servomotore
+	XMLSERVERInit(memory_map);
+
 	/*
 	//Tipico T14 per il controllo del NAS 1
 	Souliss_SetT14(memory_map, NASCTL01_On);		//Tipico T11 per il controllo del NAS
@@ -288,7 +291,7 @@ void loop()
 		}
 
 		FAST_110ms() {
-			//Logiche per gestire gli ingressi Digitali
+			//Leggo gli ingressi Digitali
 			Souliss_LowDigIn2State(PIN_DIGIN_1,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_1);
 			Souliss_LowDigIn2State(PIN_DIGIN_2,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_2);
 			Souliss_LowDigIn2State(PIN_DIGIN_3,Souliss_T1n_OnCmd,Souliss_T1n_OffCmd,memory_map,T_DIGIN_3);
