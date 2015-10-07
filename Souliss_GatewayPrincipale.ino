@@ -125,9 +125,9 @@ long nas1_count = 0;
 
 //Variabili che Gestiscono il Voltmetro
 // Voltmetro(pin,R1,R2.VRef)
-Voltmetro voltmt1(PIN_VOLT_1,47000.0,8200.0,5.36); //4.80
+Voltmetro voltmt1(PIN_VOLT_1,47000.0,4700.0,3.33); //4.80
 float v_voltmt1;
-Voltmetro voltmt2(PIN_VOLT_2,22000.0,10000.0,5.36); //4.80
+Voltmetro voltmt2(PIN_VOLT_2,22000.0,4700.0,3.33); //4.80
 float v_voltmt2;
 
 //Sonda Temperatura
@@ -139,7 +139,7 @@ DallasTemperature sensors1(&oneWire1);
 DeviceAddress insideThermometer1;
 //---T Interna Gateway
 float f_temp_2;
-OneWire oneWire2(PIN_TEMP_1);
+OneWire oneWire2(PIN_TEMP_2);
 DallasTemperature sensors2(&oneWire2);
 DeviceAddress insideThermometer2;
 
