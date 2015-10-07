@@ -1,23 +1,11 @@
 /**************************************************************************
-	--- Souliss ---
-    -- #BUILD:4 --
-
-        Gateway Principale
+	--- Souliss Gateway Principale ---
 
 		IP: 192.168.1.129
 
 Modifiche a Souliss:
 
 FRIARIELLO
---\conf\usart\usartUsrCfg.h
-		#ifndef USARTBAUDRATE_INSKETCH
-		# define USART_BAUD9k6			  0
-		# define USART_BAUD19k2			 0
-		# define	USART_BAUD57k6			1
-		# define USART_BAUD115k2			0
-		#endif
-	Impostare la velocità a 57600
-
 --\souliss\frame\vNet\drivers\nRF24\src\nRF24L01.h
 	#define RF_SETUP da 0x06 a 0x26
 
@@ -97,6 +85,7 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define PIN_RJ1_2		30
 #define PIN_RJ1_3		32
 #define PIN_TEMP_1		33
+#define PIN_TEMP_2		34
 #define PIN_VOLT_1		A8
 #define PIN_VOLT_2		A9
 
@@ -114,11 +103,12 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define T_DIGIN_3		4
 #define T_ADC_1			5	//6  -- 2Slot
 #define T_ADC_2			7	//8  -- 2Slot
-#define PC_ARM_BTN	9	//T11 Virtuale che serve per armare il pulsante di reset e di Power
+#define PC_ARM_BTN		9	//T11 Virtuale che serve per armare il pulsante di reset e di Power
 #define T_RJ1_1			10
 #define T_RJ1_2			11
 #define T_RJ1_3			12
 #define T_TEMP_1		13	//14 -- 2Slot
+#define T_TEMP_2		15	
 
 
 #define NASCTL01_On		0	//T11 per comandare l'accensione del NAS
@@ -142,10 +132,16 @@ float v_voltmt2;
 
 //Sonda Temperatura
 #define TEMPERATURE_PRECISION	9	
+//---T PC
 float f_temp_1;
-OneWire oneWire(PIN_TEMP_1);
-DallasTemperature sensors(&oneWire);
+OneWire oneWire1(PIN_TEMP_1);
+DallasTemperature sensors1(&oneWire1);
 DeviceAddress insideThermometer1;
+//---T Interna Gateway
+float f_temp_2;
+OneWire oneWire2(PIN_TEMP_1);
+DallasTemperature sensors2(&oneWire2);
+DeviceAddress insideThermometer2;
 
 
 #define DEADBAND      0.01	//Se la variazione è superiore del 0.01% aggiorno
@@ -191,6 +187,7 @@ void setup()
 	pinMode(PIN_RJ1_2,OUTPUT);
 	pinMode(PIN_RJ1_3,INPUT);
 	pinMode(PIN_TEMP_1,INPUT);
+	pinMode(PIN_TEMP_2, INPUT);
 
 
 	//Tipici
@@ -205,11 +202,17 @@ void setup()
 	Souliss_SetT14(memory_map, T_RJ1_1);	//PC rele 1 - Reset
 	Souliss_SetT11(memory_map, T_RJ1_2);	//PC rele 2	- Power
 	Souliss_SetT13(memory_map, T_RJ1_3);	//PC Acceso
-	Souliss_SetT52(memory_map, T_TEMP_1);	//Sonda Temperatura Rack
+	Souliss_SetT52(memory_map, T_TEMP_1);	//Sonda Temperatura Interna PC
+	Souliss_SetT52(memory_map, T_TEMP_2);	//Sonda Temperatura Gateway
+
 	
 	//Imposto la sonda DS18B20
-	sensors.setResolution(insideThermometer1, TEMPERATURE_PRECISION);
-	sensors.getAddress(insideThermometer1, 0);
+	sensors1.setResolution(insideThermometer1, TEMPERATURE_PRECISION);
+	sensors1.getAddress(insideThermometer1, 0);
+
+	sensors2.setResolution(insideThermometer2, TEMPERATURE_PRECISION);
+	sensors2.getAddress(insideThermometer2, 0);
+
 
 	//Inizializzo il server HTML, usato solo per il servomotore
 	XMLSERVERInit(memory_map);
@@ -274,6 +277,7 @@ void loop()
 			Souliss_Logic_T52(memory_map, T_ADC_2, DEADBAND01, &data_changed);
 			//Logica per controllare le sonde di temperatura
 			Souliss_Logic_T52(memory_map, T_TEMP_1, NODEADBAND, &data_changed);
+			Souliss_Logic_T52(memory_map, T_TEMP_2, NODEADBAND, &data_changed);
 
 			// Esegui Logic per controllare i T11
 			Souliss_Logic_T11(memory_map, T_RELE_1, &data_changed);
@@ -331,12 +335,17 @@ void loop()
 			Souliss_ImportAnalog(memory_map, T_ADC_2, &v_voltmt2);
 
 			//Leggo le sonde di temperatura
-			sensors.requestTemperatures();
-			float f_temp_1 = sensors.getTempC(insideThermometer1);
-			Serial.print("Temp:");
+			sensors1.requestTemperatures();
+			float f_temp_1 = sensors1.getTempC(insideThermometer1);
+			Serial.print("Temp1:");
 			Serial.println(f_temp_1);
 			Souliss_ImportAnalog(memory_map, T_TEMP_1, &f_temp_1);
 
+			sensors2.requestTemperatures();
+			float f_temp_2 = sensors2.getTempC(insideThermometer2);
+			Serial.print("Temp2:");
+			Serial.println(f_temp_2);
+			Souliss_ImportAnalog(memory_map, T_TEMP_2, &f_temp_2);
 
 		}
 		SLOW_510s() {
