@@ -72,6 +72,8 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define powersocket3_address	0x6503			// Indirizzo del Power Socket 3
 #define powersocket4_address	0x6504			// Indirizzo del Power Socket 4
 
+#define hvac1_address			0xCE04
+
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
 
@@ -174,6 +176,7 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, powersocket2_address,3);
 	Souliss_SetRemoteAddress(memory_map, powersocket3_address,4);
 	Souliss_SetRemoteAddress(memory_map, powersocket4_address,5);
+	Souliss_SetRemoteAddress(memory_map, hvac1_address, 6);
 
 	//Pin Mode
 	pinMode(PIN_VOLT_1,INPUT);
