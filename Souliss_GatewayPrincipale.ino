@@ -29,6 +29,7 @@ FRIARIELLO
 #define USARTDRIVER_INSKETCH
 #define	USARTDRIVER				Serial1	//Dico al driver vNet di usare la seriale 3 del Mega la Serial1
 #define USART_TXENABLE			0		//Non  uso il TX Enable con i moduli Ciseco
+#define USART_TXENPIN			3
 
 #define USARTBAUDRATE_INSKETCH
 #define	USART_BAUD57k6			1
@@ -42,10 +43,10 @@ FRIARIELLO
 // Configure the framework
 #include "bconf/StandardArduino.h"			// Use a standard Arduino
 #include "conf/ethW5100.h"					// Ethernet through Wiznet W5100
-#include "conf/nRF24L01.h"
+//#include "conf/nRF24L01.h"
 #include "conf/usart.h"
 #include "conf/Gateway_wPersistence.h"		// The main node is the Gateway
-#include "conf/XMLinterface.h"
+//#include "conf/XMLinterface.h"
 
 // Include framework code and libraries
 #include <SPI.h>
@@ -63,16 +64,22 @@ uint8_t subnet_mask[4] = {255, 255, 255, 0};
 uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 
 // Define the network configuration
-#define eth_address				ip_address[3]	// The last byte of the IP address (129) is also the vNet address
-#define usart_address			0xCE01			// Indirizzo Locale vNet della Seriale
-#define nrf24_address			0x6501			// Indirizzo locale interfaccia nrf24
-#define caldaia_address			0xCE02			// Indirizzo scheda caldaia remota Seriale
-#define ingresso_address		0xCE03			// Indirizzo scheda Ingresso remota Seriale
-#define powersocket2_address	0x6502			// Indirizzo del Power Socket 2
-#define powersocket3_address	0x6503			// Indirizzo del Power Socket 3
-#define powersocket4_address	0x6504			// Indirizzo del Power Socket 4
+#define eth_address					ip_address[3]	// The last byte of the IP address (129) is also the vNet address
+#define usart_address				0xCE01			// Indirizzo Locale vNet della Seriale
+//#define nrf24_address				0x6501			// Indirizzo locale interfaccia nrf24
+#define caldaia_address				0xCE02			// Indirizzo scheda caldaia remota Seriale
+#define ingresso_address			0xCE03			// Indirizzo scheda Ingresso remota Seriale
+#define powersocket2_address		0x0083			// IP 131 ex nrf 0x6502	- Indirizzo del Power Socket 2
+#define powersocket3_address		0x0084			// IP 132 ex nrf 0x6503 - Indirizzo del Power Socket 3
+#define powersocket4_address		0x0085			// IP 133 ex nrf 0x6504 - Indirizzo del Power Socket 4
+#define powersocket5multi_address	0x0087			// IP 135 Power socket multi mansarda
+#define bagnomansarda_address		0x0088			// IP 136 Bagno Mansarda
 
-#define hvac1_address			0xCE04
+#define hvac1_address				0xCE04			// Condizionatori Camera Letto
+#define hvac2_address				0xCE05			// Condizionatore Cucina
+
+#define	RGB_1						0x0086			// IP 134 Modulo Luci RGB
+#define scatola503					0x0089			// IP 137 Modulo Test Scatola 503	
 
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
@@ -103,22 +110,23 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define T_DIGIN_1		2
 #define T_DIGIN_2		3
 #define T_DIGIN_3		4
-#define T_ADC_1			5	//6  -- 2Slot
-#define T_ADC_2			7	//8  -- 2Slot
+#define T_ADC_1			5	//e 6  -- 2Slot
+#define T_ADC_2			7	//e 8  -- 2Slot
 #define PC_ARM_BTN		9	//T11 Virtuale che serve per armare il pulsante di reset e di Power
 #define T_RJ1_1			10
 #define T_RJ1_2			11
 #define T_RJ1_3			12
-#define T_TEMP_1		13	//14 -- 2Slot
-#define T_TEMP_2		15	
+#define T_TEMP_1		13	//e 14 -- 2Slot
+#define T_TEMP_2		15	//e 16 -- 2Slot
 
 
+/*
 #define NASCTL01_On		0	//T11 per comandare l'accensione del NAS
 #define NASCTL01_Off	1	//T11 per comandare l'accensione del NAS
 #define PC_RST_SECURE	4	//T11 per attivare il T14 che resetta il PC
 #define PC_RST_RELE		5	//T14 che azione il relè che resetta il PC
 #define PC_PWR_RELE		6	//T14 che aziona il Pulsante di accensione del PC
-
+*/
 
 // Variabili generali
 //Variabili che gestiscono l'accensione del NAS1
@@ -169,7 +177,7 @@ void setup()
 	SetAsGateway(eth_address);		//Set this node as gateway for SoulissApp	
 	Souliss_SetAddress(eth_address, myvNet_subnet, myvNet_supern);		
 	Souliss_SetAddress(usart_address, myvNet_subnet, myvNet_supern);
-	Souliss_SetAddress(nrf24_address, myvNet_subnet, myvNet_supern);
+	//Souliss_SetAddress(nrf24_address, myvNet_subnet, myvNet_supern);
 
 	Souliss_SetRemoteAddress(memory_map, caldaia_address,1);
 	Souliss_SetRemoteAddress(memory_map, ingresso_address,2);
@@ -177,6 +185,12 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, powersocket3_address,4);
 	Souliss_SetRemoteAddress(memory_map, powersocket4_address,5);
 	Souliss_SetRemoteAddress(memory_map, hvac1_address, 6);
+	Souliss_SetRemoteAddress(memory_map, hvac2_address, 7);
+	Souliss_SetRemoteAddress(memory_map, powersocket5multi_address, 8);
+	Souliss_SetRemoteAddress(memory_map, bagnomansarda_address, 9);
+
+	Souliss_SetRemoteAddress(memory_map, RGB_1, 10);
+	Souliss_SetRemoteAddress(memory_map, scatola503, 11);
 
 	//Pin Mode
 	pinMode(PIN_VOLT_1,INPUT);
@@ -218,7 +232,7 @@ void setup()
 
 
 	//Inizializzo il server HTML, usato solo per il servomotore
-	XMLSERVERInit(memory_map);
+	//XMLSERVERInit(memory_map);
 
 	/*
 	//Tipico T14 per il controllo del NAS 1
@@ -271,7 +285,7 @@ void loop()
 		}
 
 		FAST_70ms() {
-			XMLSERVERInterface(memory_map);
+			//XMLSERVERInterface(memory_map);
 		}
 
 		FAST_90ms() {
