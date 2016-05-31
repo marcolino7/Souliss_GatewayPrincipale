@@ -27,6 +27,7 @@ powersocket2_address	0x6502			// Indirizzo del Power Socket 2
 powersocket3_address	0x6503			// Indirizzo del Power Socket 3
 powersocket4_address	0x6504			// Indirizzo del Power Socket 4
 
+powersocket5_address	0x6504			// Indirizzo del Power Socket 4 IP
 
 - Tipici / Slot
 
