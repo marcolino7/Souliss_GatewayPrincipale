@@ -80,6 +80,7 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 
 #define	RGB_1						0x0086			// IP 134 Modulo Luci RGB
 #define scatola503					0x0089			// IP 137 Modulo Test Scatola 503
+#define bosecontrol					0x008A			// IP 138 Controllo di Bose Sound Dock
 #define nrf24_batterynode			0x6502			// Nodo NRF a batteria di Test
 
 #define myvNet_subnet		0xFF00
@@ -193,7 +194,7 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, RGB_1, 10);
 	Souliss_SetRemoteAddress(memory_map, scatola503, 11);
 	Souliss_SetRemoteAddress(memory_map, nrf24_batterynode, 12);
-
+	Souliss_SetRemoteAddress(memory_map, bosecontrol, 13);
 
 	//Pin Mode
 	pinMode(PIN_VOLT_1,INPUT);
