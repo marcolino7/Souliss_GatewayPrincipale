@@ -81,6 +81,8 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define	RGB_1						0x0086			// IP 134 Modulo Luci RGB
 #define scatola503					0x0089			// IP 137 Modulo Test Scatola 503
 #define bosecontrol					0x008A			// IP 138 Controllo di Bose Sound Dock
+#define technicscontrol				0x008B			// IP 139 Controllo dello stereo Technics in Mansarda
+
 #define nrf24_batterynode			0x6502			// Nodo NRF a batteria di Test
 
 #define myvNet_subnet		0xFF00
@@ -90,7 +92,7 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define PIN_RELE_1		22
 #define PIN_RELE_2		23
 #define PIN_DIGIN_1		24
-#define PIN_DIGIN_2		25
+#define PIN_DIGIN_2		28
 #define PIN_DIGIN_3		26
 #define PIN_RJ1_1		31
 #define PIN_RJ1_2		30
@@ -120,6 +122,7 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define T_RJ1_3			12
 #define T_TEMP_1		13	//e 14 -- 2Slot
 #define T_TEMP_2		15	//e 16 -- 2Slot
+#define T_SOULISS_CHECK 17
 
 
 /*
@@ -195,6 +198,8 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, scatola503, 11);
 	Souliss_SetRemoteAddress(memory_map, nrf24_batterynode, 12);
 	Souliss_SetRemoteAddress(memory_map, bosecontrol, 13);
+	Souliss_SetRemoteAddress(memory_map, technicscontrol, 14);
+
 
 	//Pin Mode
 	pinMode(PIN_VOLT_1,INPUT);
@@ -225,6 +230,8 @@ void setup()
 	Souliss_SetT13(memory_map, T_RJ1_3);	//PC Acceso
 	Souliss_SetT52(memory_map, T_TEMP_1);	//Sonda Temperatura Interna PC
 	Souliss_SetT52(memory_map, T_TEMP_2);	//Sonda Temperatura Gateway
+	Souliss_SetT11(memory_map, T_SOULISS_CHECK);	//Tipico che serve a OpenHab per verificare la funzionalità di Souliss
+
 
 	
 	//Imposto la sonda DS18B20
@@ -306,7 +313,9 @@ void loop()
 
 			Souliss_Logic_T11(memory_map, T_RJ1_1, &data_changed);
 			Souliss_Logic_T11(memory_map, T_RJ1_2, &data_changed);
-						
+
+			Souliss_Logic_T11(memory_map, T_SOULISS_CHECK, &data_changed);
+									
 			//Logica T11 per l'attivazione del Reset e Power del PC
 			Souliss_Logic_T11(memory_map, PC_ARM_BTN, &data_changed);
 
