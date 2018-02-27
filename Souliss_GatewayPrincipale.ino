@@ -83,6 +83,8 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define bosecontrol					0x008A			// IP 138 Controllo di Bose Sound Dock
 #define technicscontrol				0x008B			// IP 139 Controllo dello stereo Technics in Mansarda
 
+#define hvac_salotto				0x008C			// IP 140 Cond. Salotto e apricancello
+
 #define nrf24_batterynode			0x6502			// Nodo NRF a batteria di Test
 
 #define myvNet_subnet		0xFF00
@@ -199,6 +201,7 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, nrf24_batterynode, 12);
 	Souliss_SetRemoteAddress(memory_map, bosecontrol, 13);
 	Souliss_SetRemoteAddress(memory_map, technicscontrol, 14);
+	Souliss_SetRemoteAddress(memory_map, hvac_salotto, 15);
 
 
 	//Pin Mode
