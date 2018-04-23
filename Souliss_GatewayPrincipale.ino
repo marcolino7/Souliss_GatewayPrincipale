@@ -79,13 +79,13 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define hvac2_address				0xCE05			// Condizionatore Cucina
 
 #define	RGB_1						0x0086			// IP 134 Modulo Luci RGB
-#define scatola503					0x0089			// IP 137 Modulo Test Scatola 503
+#define sala_503					0x0089			// IP 137 Scatola 503 interruttori Sala
 #define bosecontrol					0x008A			// IP 138 Controllo di Bose Sound Dock
 #define technicscontrol				0x008B			// IP 139 Controllo dello stereo Technics in Mansarda
 
 #define hvac_salotto				0x008C			// IP 140 Cond. Salotto e apricancello
 
-#define nrf24_batterynode			0x6502			// Nodo NRF a batteria di Test
+//#define nrf24_batterynode			0x6502			// Nodo NRF a batteria di Test
 
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
@@ -197,8 +197,8 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, bagnomansarda_address, 9);
 
 	Souliss_SetRemoteAddress(memory_map, RGB_1, 10);
-	Souliss_SetRemoteAddress(memory_map, scatola503, 11);
-	Souliss_SetRemoteAddress(memory_map, nrf24_batterynode, 12);
+	//11 da problemi con il Binding Souliss di OH
+	Souliss_SetRemoteAddress(memory_map, sala_503, 12);
 	Souliss_SetRemoteAddress(memory_map, bosecontrol, 13);
 	Souliss_SetRemoteAddress(memory_map, technicscontrol, 14);
 	Souliss_SetRemoteAddress(memory_map, hvac_salotto, 15);
