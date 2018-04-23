@@ -85,7 +85,7 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 
 #define hvac_salotto				0x008C			// IP 140 Cond. Salotto e apricancello
 
-//#define nrf24_batterynode			0x6502			// Nodo NRF a batteria di Test
+#define nrf24_dummy			0x6502			// Nodo NRF a batteria di Test
 
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
@@ -197,7 +197,7 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, bagnomansarda_address, 9);
 
 	Souliss_SetRemoteAddress(memory_map, RGB_1, 10);
-	//11 da problemi con il Binding Souliss di OH
+	Souliss_SetRemoteAddress(memory_map, nrf24_dummy, 11);	//Questo ID ha problemi con OH, ma va lasciato altrimenti non carica i nodi successivi
 	Souliss_SetRemoteAddress(memory_map, sala_503, 12);
 	Souliss_SetRemoteAddress(memory_map, bosecontrol, 13);
 	Souliss_SetRemoteAddress(memory_map, technicscontrol, 14);
