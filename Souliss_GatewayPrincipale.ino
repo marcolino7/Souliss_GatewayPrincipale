@@ -85,7 +85,8 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 
 #define hvac_salotto				0x008C			// IP 140 Cond. Salotto e apricancello
 
-#define nrf24_dummy			0x6502			// Nodo NRF a batteria di Test
+//#define nrf24_dummy			0x6502			// Nodo NRF a batteria di Test
+#define nrf24_dummy			0x008E				// IP 142
 
 #define myvNet_subnet		0xFF00
 #define myvNet_supern		0x0000
