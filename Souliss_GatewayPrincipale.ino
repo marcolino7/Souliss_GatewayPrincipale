@@ -82,6 +82,9 @@ uint8_t ip_gateway[4]  = {192, 168, 1, 1};
 #define sala_503					0x0089			// IP 137 Scatola 503 interruttori Sala
 #define bosecontrol					0x008A			// IP 138 Controllo di Bose Sound Dock
 #define technicscontrol				0x008B			// IP 139 Controllo dello stereo Technics in Mansarda
+#define salotto_sx_503				0x008D			// IP 141 Scatola 503 Interruttori Salotto SX
+#define salotto_dx_503				0x008F			// IP 143 Scatola 503 Interruttori Salotto DX
+#define bagno_503					0x0090			// IP 144 Scatola 503 Interruttore Bagno
 
 #define hvac_salotto				0x008C			// IP 140 Cond. Salotto e apricancello
 
@@ -203,6 +206,9 @@ void setup()
 	Souliss_SetRemoteAddress(memory_map, bosecontrol, 13);
 	Souliss_SetRemoteAddress(memory_map, technicscontrol, 14);
 	Souliss_SetRemoteAddress(memory_map, hvac_salotto, 15);
+	Souliss_SetRemoteAddress(memory_map, salotto_sx_503, 16);
+	Souliss_SetRemoteAddress(memory_map, salotto_dx_503, 17);
+	Souliss_SetRemoteAddress(memory_map, bagno_503, 18);
 
 
 	//Pin Mode
